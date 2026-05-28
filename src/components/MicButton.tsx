@@ -1,41 +1,95 @@
+import { useState, useRef, useEffect } from 'react';
 import type { RecognitionStatus } from '../types/speech';
 import './MicButton.css';
 
-interface MicButtonProps {
-  status: RecognitionStatus;
-  onStart: () => void;
-  onStop: () => void;
+// Arc lengths per state (r=16, circumference ≈ 100.5)
+const arcDash: Record<RecognitionStatus, string> = {
+  idle:       '0 101',
+  listening:  '45 56',   // ~160° arc
+  processing: '20 81',   // ~72° arc
+  speaking:   '70 31',   // ~250° arc
+};
+
+// Lerp speed controls how snappily the arc chases the target
+const lerpSpeed: Record<RecognitionStatus, number> = {
+  idle:       0,
+  listening:  0.025,
+  processing: 0.09,
+  speaking:   0.045,
+};
+
+function useRandomRotation(status: RecognitionStatus) {
+  const rotRef    = useRef<number>(0);
+  const targetRef = useRef<number>(0);
+  const rafRef    = useRef<number>(0);
+  const [deg, setDeg] = useState(0);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      cancelAnimationFrame(rafRef.current);
+      return;
+    }
+
+    const speed = lerpSpeed[status];
+
+    const pickTarget = () => {
+      const dir = Math.random() > 0.5 ? 1 : -1;
+      const mag = 100 + Math.random() * 320;
+      targetRef.current = rotRef.current + dir * mag;
+    };
+
+    pickTarget();
+
+    const tick = () => {
+      const diff = targetRef.current - rotRef.current;
+      if (Math.abs(diff) < 8) pickTarget();
+      rotRef.current += diff * speed;
+      setDeg(rotRef.current);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [status]);
+
+  return deg;
 }
 
-export function MicButton({ status, onStart, onStop }: MicButtonProps) {
-  const isListening = status === 'listening';
-  const isDisabled = status === 'processing' || status === 'speaking';
+interface StatusIndicatorProps {
+  status: RecognitionStatus;
+}
+
+export function StatusIndicator({ status }: StatusIndicatorProps) {
+  const rotation = useRandomRotation(status);
 
   return (
-    <button
-      className={`mic-button ${isListening ? 'listening' : ''} ${isDisabled ? 'disabled' : ''}`}
-      onClick={isListening ? onStop : onStart}
-      disabled={isDisabled}
-      aria-label={isListening ? 'Stop listening' : 'Start listening'}
-    >
-      <span className="mic-icon">
-        {isListening ? (
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="6" width="12" height="12" rx="2" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-          </svg>
+    <div className={`status-indicator ${status}`} role="status" aria-live="polite">
+      <svg className="circle-icon" viewBox="0 0 40 40" fill="none">
+        {/* Faint background track */}
+        <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="2.5" opacity="0.2" />
+        {/* Randomly rotating arc */}
+        <circle
+          cx="20" cy="20" r="16"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={arcDash[status]}
+          style={{
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
+            transform: `rotate(${rotation}deg)`,
+          }}
+        />
+        {status === 'idle' && (
+          <circle cx="20" cy="20" r="3.5" fill="currentColor" opacity="0.4" />
         )}
-      </span>
+      </svg>
       <span className="mic-label">
-        {status === 'idle' && 'Tap to speak'}
+        {status === 'idle' && 'Ready'}
         {status === 'listening' && 'Listening...'}
         {status === 'processing' && 'Thinking...'}
         {status === 'speaking' && 'Speaking...'}
       </span>
-    </button>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from './hooks/useSpeechSynthesis';
 import { getAIResponse } from './services/aiService';
-import { MicButton } from './components/MicButton';
+import { StatusIndicator } from './components/MicButton';
 import { ChatMessage } from './components/ChatMessage';
 import type { Message, RecognitionStatus } from './types/speech';
 import './App.css';
@@ -15,7 +15,7 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<Message[]>([]);
 
-  const { speak, isSpeaking, stop: stopSpeaking } = useSpeechSynthesis();
+  const { speak, isSpeaking } = useSpeechSynthesis();
 
   const addMessage = useCallback((role: Message['role'], text: string) => {
     const msg: Message = { id: crypto.randomUUID(), role, text, timestamp: new Date() };
@@ -46,13 +46,30 @@ function App() {
     [addMessage, speak]
   );
 
-  const { isListening, interimTranscript, isSupported, start, stop } = useSpeechRecognition({
+  const { isListening, interimTranscript, isSupported, start, stop, resume } = useSpeechRecognition({
     onResult: handleUserSpeech,
     onError: (err) => {
       setError(`Microphone error: ${err}`);
       setStatus('idle');
     },
   });
+
+  // Auto-start on mount
+  const hasStartedRef = useRef(false);
+  useEffect(() => {
+    if (isSupported && !hasStartedRef.current) {
+      hasStartedRef.current = true;
+      start();
+    }
+    return () => stop();
+  }, [isSupported, start, stop]);
+
+  // Resume listening after speaking/processing finishes
+  useEffect(() => {
+    if (!isSpeaking && status === 'idle') {
+      resume();
+    }
+  }, [status, isSpeaking, resume]);
 
   useEffect(() => {
     setInterimText(interimTranscript);
@@ -66,17 +83,6 @@ function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, interimText]);
 
-  const handleMicStart = () => {
-    stopSpeaking();
-    setStatus('listening');
-    start();
-  };
-
-  const handleMicStop = () => {
-    stop();
-    setStatus('idle');
-  };
-
   return (
     <div className="app">
       <header className="app-header">
@@ -87,7 +93,7 @@ function App() {
       <main className="chat-area">
         {messages.length === 0 && (
           <div className="empty-state">
-            <p>Tap the microphone and start speaking.</p>
+            <p>Just start speaking — I'm listening.</p>
             <p className="hint">Try: "Hello", "Tell me a joke", "What time is it?"</p>
           </div>
         )}
@@ -112,7 +118,7 @@ function App() {
             Speech recognition is not supported. Please use Chrome or Edge.
           </div>
         )}
-        <MicButton status={isSpeaking ? 'speaking' : status} onStart={handleMicStart} onStop={handleMicStop} />
+        <StatusIndicator status={isSpeaking ? 'speaking' : status} />
       </footer>
     </div>
   );

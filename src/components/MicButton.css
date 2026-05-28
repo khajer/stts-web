@@ -1,66 +1,33 @@
-.mic-button {
+.status-indicator {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: inherit;
-  transition: transform 0.15s ease;
 }
 
-.mic-button:active:not(.disabled) {
-  transform: scale(0.95);
-}
-
-.mic-button.disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.mic-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.circle-icon {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  background: #2563eb;
-  color: white;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  color: #9ca3af;
+  transition: color 0.3s ease;
 }
 
-.mic-icon svg {
-  width: 36px;
-  height: 36px;
-}
-
-.mic-button.listening .mic-icon {
-  background: #dc2626;
-  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
-  animation: pulse 1.2s infinite;
-}
-
-.mic-button.disabled .mic-icon {
-  background: #6b7280;
-  box-shadow: none;
-}
+.status-indicator.listening  .circle-icon { color: #2563eb; }
+.status-indicator.processing .circle-icon { color: #d97706; }
+.status-indicator.speaking   .circle-icon { color: #059669; }
 
 .mic-label {
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: #9ca3af;
+  transition: color 0.3s ease;
 }
 
-.mic-button.listening .mic-label {
-  color: #dc2626;
-}
+.status-indicator.listening  .mic-label { color: #2563eb; }
+.status-indicator.processing .mic-label { color: #d97706; }
+.status-indicator.speaking   .mic-label { color: #059669; }
 
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
-  70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+@media (prefers-color-scheme: dark) {
+  .circle-icon { color: #4b5563; }
+  .mic-label   { color: #4b5563; }
 }
