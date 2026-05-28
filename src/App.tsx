@@ -111,15 +111,20 @@ function App() {
         </div>
       </main>
 
-      <footer className="app-footer">
-        {error && <div className="error-banner">{error}</div>}
-        {!isSupported && (
-          <div className="error-banner">
-            Speech recognition is not supported. Please use Chrome or Edge.
-          </div>
-        )}
+      {(error || !isSupported) && (
+        <footer className="app-footer">
+          {error && <div className="error-banner">{error}</div>}
+          {!isSupported && (
+            <div className="error-banner">
+              Speech recognition is not supported. Please use Chrome or Edge.
+            </div>
+          )}
+        </footer>
+      )}
+
+      <div className="jarvis-overlay">
         <StatusIndicator status={isSpeaking ? 'speaking' : status} />
-      </footer>
+      </div>
     </div>
   );
 }
