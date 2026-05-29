@@ -66,6 +66,18 @@
   color: #d1d5db;
 }
 
+.empty-state kbd {
+  display: inline-block;
+  padding: 1px 7px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  box-shadow: 0 1px 0 #9ca3af;
+  color: #374151;
+}
+
 .interim-text {
   display: flex;
   justify-content: flex-end;
@@ -83,15 +95,23 @@
   max-width: 75%;
 }
 
-/* Footer */
+/* Footer (errors only) */
 .app-footer {
-  padding: 16px 24px 28px;
+  padding: 12px 24px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+/* Floating mic button */
+.mic-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
 }
 
 .error-banner {
@@ -140,5 +160,12 @@
     background: #450a0a;
     color: #fca5a5;
     border-color: #7f1d1d;
+  }
+
+  .empty-state kbd {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 1px 0 #0f172a;
+    color: #cbd5e1;
   }
 }

@@ -77,6 +77,29 @@ function App() {
     setStatus('idle');
   };
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        if (!isListening && status !== 'processing' && status !== 'speaking') {
+          handleMicStart();
+        }
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isListening) handleMicStop();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, [isListening, status]);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -87,7 +110,7 @@ function App() {
       <main className="chat-area">
         {messages.length === 0 && (
           <div className="empty-state">
-            <p>Tap the microphone and start speaking.</p>
+            <p>Hold <kbd>Space</kbd> or tap the mic to speak.</p>
             <p className="hint">Try: "Hello", "Tell me a joke", "What time is it?"</p>
           </div>
         )}
@@ -105,15 +128,20 @@ function App() {
         </div>
       </main>
 
-      <footer className="app-footer">
-        {error && <div className="error-banner">{error}</div>}
-        {!isSupported && (
-          <div className="error-banner">
-            Speech recognition is not supported. Please use Chrome or Edge.
-          </div>
-        )}
+      {(error || !isSupported) && (
+        <footer className="app-footer">
+          {error && <div className="error-banner">{error}</div>}
+          {!isSupported && (
+            <div className="error-banner">
+              Speech recognition is not supported. Please use Chrome or Edge.
+            </div>
+          )}
+        </footer>
+      )}
+
+      <div className="mic-fab">
         <MicButton status={isSpeaking ? 'speaking' : status} onStart={handleMicStart} onStop={handleMicStop} />
-      </footer>
+      </div>
     </div>
   );
 }

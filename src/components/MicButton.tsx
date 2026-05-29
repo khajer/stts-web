@@ -31,7 +31,7 @@ export function MicButton({ status, onStart, onStop }: MicButtonProps) {
         )}
       </span>
       <span className="mic-label">
-        {status === 'idle' && 'Tap to speak'}
+        {status === 'idle' && 'Hold Space / Tap'}
         {status === 'listening' && 'Listening...'}
         {status === 'processing' && 'Thinking...'}
         {status === 'speaking' && 'Speaking...'}
