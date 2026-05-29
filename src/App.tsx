@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from './hooks/useSpeechSynthesis';
 import { getAIResponse } from './services/aiService';
-import { MicButton } from './components/MicButton';
+import { StatusIndicator } from './components/MicButton';
 import { ChatMessage } from './components/ChatMessage';
 import type { Message, RecognitionStatus } from './types/speech';
 import './App.css';
@@ -140,7 +140,14 @@ function App() {
       )}
 
       <div className="mic-fab">
-        <MicButton status={isSpeaking ? 'speaking' : status} onStart={handleMicStart} onStop={handleMicStop} />
+        <button
+          className="mic-fab-btn"
+          onClick={isListening ? handleMicStop : handleMicStart}
+          disabled={status === 'processing' || isSpeaking}
+          aria-label={isListening ? 'Stop listening' : 'Start listening'}
+        >
+          <StatusIndicator status={isSpeaking ? 'speaking' : status} />
+        </button>
       </div>
     </div>
   );

@@ -114,6 +114,23 @@
   z-index: 100;
 }
 
+.mic-fab-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mic-fab-btn:disabled {
+  cursor: not-allowed;
+}
+
+.mic-fab-btn:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
 .error-banner {
   width: 100%;
   background: #fef2f2;
